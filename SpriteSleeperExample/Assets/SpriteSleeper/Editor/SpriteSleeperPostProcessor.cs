@@ -76,11 +76,6 @@ namespace SpriteSleeperEditor
 
                     usedAtlasPairs++;
                 }
-                else
-                {
-                    EditorUtility.DisplayDialog("SpriteAtlas error!", "To use SpriteAtlasSleeper, all SpriteAtlas assets must be in a Resources folder.", "Ok");
-                    return;
-                }
             }
 
             string filePath = SpriteSleeperManager.GetSpriteSleeperDataPath();
