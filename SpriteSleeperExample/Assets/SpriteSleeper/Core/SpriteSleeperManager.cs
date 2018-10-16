@@ -36,7 +36,7 @@ namespace SpriteSleeper
         {
             if (_instance == null && !_destroyed)
             {
-                GameObject spriteSleeperGameObject = new GameObject("SpriteSleeperAtlasCache");
+                GameObject spriteSleeperGameObject = new GameObject("SpriteSleeperManager");
                 GameObject.DontDestroyOnLoad(spriteSleeperGameObject);
                 spriteSleeperGameObject.hideFlags = HideFlags.DontSave | HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;
                 _instance = spriteSleeperGameObject.AddComponent<SpriteSleeperManager>();
