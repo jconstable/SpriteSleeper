@@ -1,0 +1,8 @@
+{
+    "name": "SpriteSleeperEditorAssembly",
+    "references": [
+        "SpriteSleeperAssembly"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": []
+}
