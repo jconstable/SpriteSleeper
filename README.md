@@ -6,4 +6,4 @@ To use, add a SpriteSleeperCanvas to the GameObject that contains one of your Ca
 TODO:
 - Add option on SpriteSleeperCanvas to strip Atlas references from scenes at build time
 - Support Asset Bundles
-- Support Addressables
+- Support Addressables 
