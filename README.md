@@ -7,7 +7,7 @@ This package aims to allow the developer to choose which UI screens should keep 
 
 By default, each Canvas will maintain default functionality. To add this new functionality to a Canvas, add a SpriteSleeperCanvas component to the Canvas GameObject. Note: SpriteAtlas assets that can be managed by this library currently need to reside in a Resources folder. Once the application is running in the Editor, verify that atlases are being tracked and loaded properly using the inspector on the SpriteSleeperManager object.
 
-We recommend splitting up your Sprite Atlases accordingly, if possible, so that multiple UI screens won't prevent Atlas unloading. Boilerplate UI Atlases are not a good candidate for this use case.
+If possible, we recommend splitting up your Sprite Atlases such that Sprites aren't unnecessarily shared across multiple screens. Boilerplate UI Atlases are not good candidates for SpriteSleeper.
 
 TODO:
 - Add option on SpriteSleeperCanvas to strip Atlas references from scenes at build time
