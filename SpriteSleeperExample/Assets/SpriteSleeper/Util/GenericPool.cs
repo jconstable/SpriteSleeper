@@ -8,6 +8,7 @@ namespace SpriteSleeper
         private System.Func<T> _createFunction = null;
         private System.Action<T> _resetFunction = null;
         private List<T> _itemList;
+        private List<T> _usedList;
 
         public GenericPool(uint initialCapacity, System.Func<T> createFunc) :
             this(initialCapacity, createFunc, null)
@@ -18,35 +19,52 @@ namespace SpriteSleeper
             _createFunction = createFunc;
             _resetFunction = resetFunction;
 
-            _itemList = new List<T>();
+            _itemList = new List<T>((int)initialCapacity);
+            _usedList = new List<T>((int)initialCapacity);
 
             T value = null;
             for ( int i = 0; i < initialCapacity; i++ )
             {
                 value = _createFunction();
-                Put(value);
+                InternalPut(value);
             }
         }
 
         public T Get()
         {
+            T value = null;
             if (_itemList.Count == 0)
             {
-                return _createFunction();
+                value = _createFunction();
+            } else
+            {
+                int index = _itemList.Count - 1;
+                value = _itemList[index];
+                _itemList.RemoveAt(index);
             }
 
-            int index = _itemList.Count - 1;
-            T value = _itemList[index];
-            _itemList.RemoveAt(index);
+            _usedList.Add(value);
 
             return value;
         }
 
         public void Put(T item)
         {
+#if UNITY_EDITOR
+            if(!_usedList.Contains(item))
+            {
+                throw new System.Exception("Returning an item to GenericPool that wasn't created by the pool.");
+            }
+#endif
+            _usedList.Remove(item);
+            InternalPut(item);
+        }
+
+        void InternalPut(T item)
+        {
             _itemList.Add(item);
 
-            if ( _resetFunction != null )
+            if (_resetFunction != null)
             {
                 _resetFunction(item);
             }
@@ -54,6 +72,8 @@ namespace SpriteSleeper
 
         public void Destroy()
         {
+            _usedList.Clear();
+            _usedList = null;
             _itemList.Clear();
             _itemList = null;
         }
