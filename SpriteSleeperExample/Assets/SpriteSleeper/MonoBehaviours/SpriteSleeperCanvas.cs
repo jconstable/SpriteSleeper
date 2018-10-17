@@ -44,6 +44,9 @@ namespace SpriteSleeper
 
             _spriteSleepers = new List<SpriteSleeperImage>();
             RefreshImageList();
+
+            // Allow for canvases that start disabled to unref their images
+            Invoke("OnCanvasHierarchyChanged", 0.0001f);
         }
 
         private void OnDestroy()
