@@ -90,12 +90,6 @@ namespace SpriteSleeper
                 }
             }
 
-            // Manage the late update for each canvas
-            foreach( var canvas in _canvases)
-            {
-                canvas.DoLateUpdate();
-            }
-
 #if UNITY_EDITOR
             // Redraw the custom inspector
             if(WantRepaint != null)

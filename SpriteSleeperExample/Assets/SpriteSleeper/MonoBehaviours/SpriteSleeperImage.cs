@@ -8,8 +8,6 @@ namespace SpriteSleeper
     // MonoBehaviour that should be attached to any Image that should be allowed to sleep
     public class SpriteSleeperImage : MonoBehaviour
     {
-        private static WaitForSeconds s_waitTime = new WaitForSeconds(5f);
-
         // Public variables, possibly for serialization
         public string Tag = null;
         public string SpriteName = null;
@@ -25,27 +23,13 @@ namespace SpriteSleeper
 
             _manager.OnAtlasLoaded += FindTag;
 
-            if (_image != null)
-            {
-                FindTag();
-            }
+            FindTag();
 
-            // Remove the callback from the manager in 5 sec if we still haven't found a tag
-            if (string.IsNullOrEmpty(Tag))
-            {
-                StartCoroutine(GiveUpOnFindingTag());
-            }
+            Invoke("StopListeningForAtlases", 0.0001f);
         }
 
         private void OnDestroy()
         {
-            StopListeningForAtlases();
-        }
-
-        IEnumerator GiveUpOnFindingTag()
-        {
-            yield return s_waitTime;
-
             StopListeningForAtlases();
         }
 
@@ -75,6 +59,8 @@ namespace SpriteSleeper
                         {
                             StopListeningForAtlases();
                             Tag = tag;
+
+                            _manager.RefTag(Tag);
                         }
                     }
                 }

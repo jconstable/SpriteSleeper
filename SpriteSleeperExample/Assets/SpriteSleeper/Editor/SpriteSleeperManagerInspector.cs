@@ -25,6 +25,12 @@ namespace SpriteSleeperEditor
 
             SpriteSleeperManager myTarget = Target;
 
+            var loadListeners = (myTarget.OnAtlasLoaded == null) ? 0 : myTarget.OnAtlasLoaded.GetInvocationList().Length;
+            EditorGUILayout.LabelField("Load listeners: " + loadListeners.ToString());
+
+            var unloadListeners = (myTarget.OnAtlasUnloaded == null) ? 0 : myTarget.OnAtlasUnloaded.GetInvocationList().Length;
+            EditorGUILayout.LabelField("Unload listeners: " + unloadListeners.ToString());
+
             EditorGUILayout.LabelField("Managed canvases: " + myTarget.NumCanvasesPresent.ToString());
 
             var loadedInfos = myTarget.LoadedAtlases;

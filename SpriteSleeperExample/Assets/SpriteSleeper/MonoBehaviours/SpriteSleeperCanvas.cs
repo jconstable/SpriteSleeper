@@ -11,8 +11,9 @@ namespace SpriteSleeper
         // Private variables
         private Canvas _canvas;
         private List<SpriteSleeperImage> _spriteSleepers;
-        private SleepState _currentSleepState = SleepState.Sleeping;
+        private SleepState _currentSleepState = SleepState.Awake;
         private SpriteSleeperManager _manager;
+        private bool _hasCanvas = false;
 
         // The current state of the canvas
         private enum SleepState
@@ -24,22 +25,25 @@ namespace SpriteSleeper
         private void Awake()
         {
             _canvas = GetComponent<Canvas>();
+            if (_canvas == null)
+            {
+                Debug.LogError("SpriteSleeperCanvas is unable to find a Canvas component on the current object. Ensure that this component is added to the GameObject containing the Canvas.");
+                return;
+            }
 
+            _hasCanvas = true;
             _manager = SpriteSleeperManager.Instance();
 
-            if (_manager != null && !_manager.Equals(null))
+            if (_manager == null || _manager.Equals(null))
             {
-                _manager.AddCanvas(this);
-
-                if (_canvas == null)
-                {
-                    Debug.LogError("SpriteSleeperCanvas is unable to find a Canvas component on the current object. Ensure that this component is added to the GameObject containing the Canvas.");
-                    return;
-                }
-
-                _spriteSleepers = new List<SpriteSleeperImage>();
-                RefreshImageList();
+                Debug.LogError("SpriteSleeperCanvas is unable to find a SpriteSleeperManager.");
+                return;
             }
+
+            _manager.AddCanvas(this);
+
+            _spriteSleepers = new List<SpriteSleeperImage>();
+            RefreshImageList();
         }
 
         private void OnDestroy()
@@ -67,11 +71,10 @@ namespace SpriteSleeper
             }
         }
 
-        // Query the state of the actual Canvas component, and update as needed
-        public void DoLateUpdate() {
-            if (_canvas != null && !_canvas.Equals(null))
+        protected void OnCanvasHierarchyChanged()
+        {
+            if (_hasCanvas)
             {
-                // If only there were callbacks for components being enabled or disabled
                 SleepState state = (_canvas.isActiveAndEnabled) ? SleepState.Awake : SleepState.Sleeping;
                 if (state != _currentSleepState)
                 {
@@ -83,7 +86,7 @@ namespace SpriteSleeper
                     else
                     {
 #if UNITY_EDITOR
-                        if( !_canvas.gameObject.activeInHierarchy )
+                        if (!_canvas.gameObject.activeInHierarchy)
                         {
                             Debug.LogWarning("Did you know it's more efficient to disable the Canvas component than to deactivate the GameObject? Read more here https://unity3d.com/learn/tutorials/topics/best-practices/other-ui-optimization-techniques-and-tips");
                         }
