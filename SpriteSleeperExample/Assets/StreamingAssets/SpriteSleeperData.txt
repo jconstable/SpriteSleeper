@@ -1,1 +1,1 @@
-{"Atlases":[{"AtlasID":0,"AtlasTag":"Environment","ResourcesPath":"Atlases/Environment"},{"AtlasID":1,"AtlasTag":"Cave","ResourcesPath":"Atlases/Cave"},{"AtlasID":2,"AtlasTag":"Menus","ResourcesPath":"Atlases/Menus"},{"AtlasID":0,"AtlasTag":"","ResourcesPath":""}]}
+{"Atlases":[{"AtlasID":0,"AtlasTag":"Environment","ResourcesPath":"Atlases/Environment"},{"AtlasID":1,"AtlasTag":"Cave","ResourcesPath":"Atlases/Cave"},{"AtlasID":2,"AtlasTag":"Menus","ResourcesPath":"Atlases/Menus"}]}

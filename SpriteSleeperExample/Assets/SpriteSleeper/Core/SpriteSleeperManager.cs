@@ -14,6 +14,14 @@ namespace SpriteSleeper
         public int RefCount = 0;
         public string Tag = null;
         public string FirstSpriteName = null;
+
+        public void Reset()
+        {
+            Atlas = null;
+            FirstSpriteName = null;
+            RefCount = 0;
+            Tag = null;
+        }
     }
 
     // Manager that controls all loaded and references SpriteAtlas objects
@@ -77,12 +85,12 @@ namespace SpriteSleeper
             _spriteDictPool = new GenericPool<Dictionary<string, Sprite>>(
                 10, 
                 () => { return new Dictionary<string, Sprite>(); }, 
-                (item) => { item.Clear(); }
+                (dict) => { dict.Clear(); }
             );
             _atlasInfoPool = new GenericPool<LoadedAtlasInfo>(
                 10,
                 () => { return new LoadedAtlasInfo(); },
-                (info) => { info.Atlas = null; info.FirstSpriteName = null; info.RefCount = 0; info.Tag = null; }
+                (info) => { info.Reset(); }
             );
             _tempSprites = new Sprite[s_MaxSprites];
         }

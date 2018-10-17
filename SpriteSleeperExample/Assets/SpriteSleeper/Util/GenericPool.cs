@@ -1,10 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace SpriteSleeper
 {
-    public class GenericPool<T>
+    public class GenericPool<T> where T : class
     {
         private System.Func<T> _createFunction = null;
         private System.Action<T> _resetFunction = null;
@@ -21,32 +20,36 @@ namespace SpriteSleeper
 
             _itemList = new List<T>();
 
-            for( int i = 0; i < initialCapacity; i++ )
+            T value = null;
+            for ( int i = 0; i < initialCapacity; i++ )
             {
-                _itemList.Add(_createFunction());
+                value = _createFunction();
+                Put(value);
             }
         }
 
         public T Get()
         {
-            if( _itemList.Count == 0)
+            if (_itemList.Count == 0)
             {
                 return _createFunction();
             }
 
-            T value = _itemList[0];
-            _itemList.RemoveAt(0);
+            int index = _itemList.Count - 1;
+            T value = _itemList[index];
+            _itemList.RemoveAt(index);
 
             return value;
         }
 
         public void Put(T item)
         {
-            if( _resetFunction != null )
+            _itemList.Add(item);
+
+            if ( _resetFunction != null )
             {
                 _resetFunction(item);
             }
-            _itemList.Add(item);
         }
 
         public void Destroy()
