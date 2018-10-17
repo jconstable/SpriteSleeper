@@ -31,6 +31,12 @@ namespace SpriteSleeper
                 return;
             }
 
+            if( !_canvas.isRootCanvas )
+            {
+                Debug.LogError("SpriteSleeperCanvas should only be used on root canvases.");
+                return;
+            }
+
             _hasCanvas = true;
             _manager = SpriteSleeperManager.Instance();
 
@@ -89,9 +95,11 @@ namespace SpriteSleeper
                     else
                     {
 #if UNITY_EDITOR
-                        if (!_canvas.gameObject.activeInHierarchy)
+                        if (!_canvas.gameObject.activeInHierarchy )
                         {
-                            Debug.LogWarning("Did you know it's more efficient to disable the Canvas component than to deactivate the GameObject? Read more here https://unity3d.com/learn/tutorials/topics/best-practices/other-ui-optimization-techniques-and-tips");
+                            if(UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode && 
+                                UnityEditor.EditorApplication.isPlaying)
+                                Debug.LogWarning("Did you know it's more efficient to disable the Canvas component than to deactivate the GameObject? Read more here https://unity3d.com/learn/tutorials/topics/best-practices/other-ui-optimization-techniques-and-tips");
                         }
 #endif
                         Sleep();
