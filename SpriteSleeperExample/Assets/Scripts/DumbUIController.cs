@@ -31,7 +31,7 @@ public class DumbUIController : MonoBehaviour {
 	}
 	
 	void Update()
-    {
+    { 
         if( Time.time - _lastRotationAt > RotationSpeed )
         {
             _lastRotationAt = Time.time;

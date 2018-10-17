@@ -13,4 +13,3 @@ TODO:
 - Add option on SpriteSleeperCanvas to strip Atlas references from scenes at build time
 - Support Asset Bundles
 - Support Addressables 
-- Make call to Resources.UnloadUnusedAssets() optional

@@ -292,13 +292,14 @@ namespace SpriteSleeper
                     if(sprites.TryGetValue(info.FirstSpriteName, out sprite))
                     {
                         _textureToInfo.Remove(sprite.texture);
+                        Resources.UnloadAsset(sprite.texture);
                     }
+                    sprites.Clear();
                 }
             }
             _tagToSprites.Remove(info.Tag);
 
             Resources.UnloadAsset(info.Atlas);
-            Resources.UnloadUnusedAssets();
 
             info.Atlas = null;
             if( OnAtlasTagUnloaded!= null )
