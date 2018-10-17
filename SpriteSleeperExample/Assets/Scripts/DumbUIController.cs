@@ -39,7 +39,10 @@ public class DumbUIController : MonoBehaviour {
             var set = Sets[_counter];
             foreach (var canvas in _allCanvases)
             {
-                canvas.enabled = set.Canvases.Contains(canvas);
+                if (canvas != null && !canvas.Equals(null))
+                {
+                    canvas.enabled = set.Canvases.Contains(canvas);
+                }
             }
 
             _counter = (_counter + 1) % Sets.Length;
