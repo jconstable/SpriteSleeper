@@ -71,6 +71,7 @@ namespace SpriteSleeper
         public void DoLateUpdate() {
             if (_canvas != null && !_canvas.Equals(null))
             {
+                // If only there were callbacks for components being enabled or disabled
                 SleepState state = (_canvas.isActiveAndEnabled) ? SleepState.Awake : SleepState.Sleeping;
                 if (state != _currentSleepState)
                 {
@@ -81,24 +82,14 @@ namespace SpriteSleeper
                     }
                     else
                     {
+#if UNITY_EDITOR
                         if( !_canvas.gameObject.activeInHierarchy )
                         {
                             Debug.LogWarning("Did you know it's more efficient to disable the Canvas component than to deactivate the GameObject? Read more here https://unity3d.com/learn/tutorials/topics/best-practices/other-ui-optimization-techniques-and-tips");
                         }
+#endif
                         Sleep();
                     }
-                }
-            }
-        }
-
-        // Call the contained SleeperImages asking them to re-query for their atlas tag
-        public void FindTags()
-        {
-            foreach (var sleeper in _spriteSleepers)
-            {
-                if( sleeper.TagState == SpriteSleeperImage.TagStateValue.NoTag )
-                {
-                    sleeper.FindTag();
                 }
             }
         }

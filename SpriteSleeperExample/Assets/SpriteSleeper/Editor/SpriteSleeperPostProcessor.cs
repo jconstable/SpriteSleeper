@@ -35,10 +35,9 @@ namespace SpriteSleeperEditor
         {
             List<SpriteAtlas> resourceAtlases = new List<SpriteAtlas>();
 
-            SpriteAtlasList list = new SpriteAtlasList();
-            list.Atlases = new SpriteAtlasList.AtlasInfo[resourceAtlases.Count];
-            
-            foreach (var atlas in resourceAtlases)
+            SpriteAtlas[] atlases = Resources.FindObjectsOfTypeAll<SpriteAtlas>();
+
+            foreach (var atlas in atlases)
             {
                 var atlasPath = AssetDatabase.GetAssetPath(atlas);
                 int resourcesIndex = atlasPath.IndexOf(ResourcesIdentifier);
@@ -52,7 +51,7 @@ namespace SpriteSleeperEditor
 
         static void RebuildAtlasCache()
         {
-            SpriteAtlas[] atlases = Resources.FindObjectsOfTypeAll<SpriteAtlas>();
+            SpriteAtlas[] atlases = FindAtlasesInResources();
 
             SpriteAtlasList list = new SpriteAtlasList();
             list.Atlases = new SpriteAtlasList.AtlasInfo[atlases.Length];

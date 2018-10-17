@@ -46,13 +46,13 @@ namespace SpriteSleeper
         }
 
         // Delegate function for atlas load callbacks
-        public delegate void OnAtlasTagDelegate(string tag);
+        public delegate void OnAtlasTagDelegate();
 
         // Delegate to register for notification on atlases being unloaded
-        public OnAtlasTagDelegate OnAtlasTagUnloaded;
+        public OnAtlasTagDelegate OnAtlasUnloaded;
 
         // Delegate to register for notification on atlases being loaded
-        public OnAtlasTagDelegate OnAtlasTagLoaded;
+        public OnAtlasTagDelegate OnAtlasLoaded;
 
         // Private variable for manager state
         private HashSet<SpriteSleeperCanvas> _canvases;
@@ -60,7 +60,7 @@ namespace SpriteSleeper
         private Dictionary<Texture2D, LoadedAtlasInfo> _textureToInfo;
         private Dictionary<string, LoadedAtlasInfo> _tagToInfo;
         private Dictionary<string, Dictionary<string, Sprite>> _tagToSprites;
-        private bool _atlasLoadedThisFrame = false;
+        private bool _atlasWasLoadedThisFrame = false;
 
         // Constructor
         SpriteSleeperManager()
@@ -80,11 +80,14 @@ namespace SpriteSleeper
 
         private void LateUpdate()
         {
-            // If we received atlas callbacks this frame, canvases need to know
-            if( _atlasLoadedThisFrame )
+            // Fire delegate if something loaded an atlas this frame
+            if (_atlasWasLoadedThisFrame)
             {
-                _atlasLoadedThisFrame = false;
-                OnAtlasLoaded();
+                _atlasWasLoadedThisFrame = false;
+                if (OnAtlasLoaded != null)
+                {
+                    OnAtlasLoaded();
+                }
             }
 
             // Manage the late update for each canvas
@@ -187,11 +190,7 @@ namespace SpriteSleeper
                     _textureToInfo[texture] = info;
                     _tagToInfo[tag] = info;
 
-                    // Call delegate, if assigned
-                    if (OnAtlasTagLoaded != null)
-                    {
-                        OnAtlasTagLoaded(tag);
-                    }
+                    _atlasWasLoadedThisFrame = true;
 
                     return info;
                 }
@@ -260,7 +259,7 @@ namespace SpriteSleeper
 
             // Images will not add refs when the awake, so floor at 0
             info.RefCount = Mathf.Max(info.RefCount + value, 0);
-
+            
             // Atlas needs to be unloaded
             if (info.RefCount == 0)
             {
@@ -302,32 +301,20 @@ namespace SpriteSleeper
             Resources.UnloadAsset(info.Atlas);
 
             info.Atlas = null;
-            if( OnAtlasTagUnloaded!= null )
+            if( OnAtlasUnloaded!= null )
             {
-                OnAtlasTagUnloaded(tag);
+                OnAtlasUnloaded();
             }
         }
 
         // Unity callback when a sprite requests a linked atlas
         void OnAtlasRequested(string tag, System.Action<SpriteAtlas> action)
         {
-            Debug.Log("Atlas requested: " + tag);
-
             var atlasInfo = LoadAtlas(tag);
 
             if (atlasInfo != null)
             {
-                _atlasLoadedThisFrame = true;
                 action(atlasInfo.Atlas);
-            }
-        }
-
-        // Interal callback when an atlas loads. Allow images to re-query for their atlas tag.
-        void OnAtlasLoaded()
-        {
-            foreach( var canvas in _canvases)
-            {
-                canvas.FindTags();
             }
         }
 

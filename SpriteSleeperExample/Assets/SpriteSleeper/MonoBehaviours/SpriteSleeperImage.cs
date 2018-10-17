@@ -8,6 +8,8 @@ namespace SpriteSleeper
     // MonoBehaviour that should be attached to any Image that should be allowed to sleep
     public class SpriteSleeperImage : MonoBehaviour
     {
+        private static WaitForSeconds s_waitTime = new WaitForSeconds(5f);
+
         // Public variables, possibly for serialization
         public string Tag = null;
         public string SpriteName = null;
@@ -15,29 +17,48 @@ namespace SpriteSleeper
         // Private variables
         private Image _image = null;
         private SpriteSleeperManager _manager = null;
-        private TagStateValue _tagState = TagStateValue.NoTag;
-
-        // The current state of the tag
-        public TagStateValue TagState { get { return _tagState; } }
-
-        public enum TagStateValue
-        {
-            HasTag,
-            NoTag,
-            NeverTag
-        }
 
         public void Start()
         {
             _image = GetComponent<Image>();
             _manager = SpriteSleeperManager.Instance();
+
+            _manager.OnAtlasLoaded += FindTag;
+
             if (_image != null)
             {
                 FindTag();
             }
+
+            // Remove the callback from the manager in 5 sec if we still haven't found a tag
+            if (string.IsNullOrEmpty(Tag))
+            {
+                StartCoroutine(GiveUpOnFindingTag());
+            }
         }
 
-        public void FindTag()
+        private void OnDestroy()
+        {
+            StopListeningForAtlases();
+        }
+
+        IEnumerator GiveUpOnFindingTag()
+        {
+            yield return s_waitTime;
+
+            StopListeningForAtlases();
+        }
+
+        private void StopListeningForAtlases()
+        {
+            // If we haven't found a tag by now, we probably won't
+            if (string.IsNullOrEmpty(Tag))
+            {
+                _manager.OnAtlasLoaded -= FindTag;
+            }
+        }
+
+        private void FindTag()
         {
             if (string.IsNullOrEmpty(Tag) && _image != null && _manager != null && !_manager.Equals(null))
             {
@@ -49,30 +70,20 @@ namespace SpriteSleeper
                     Texture2D texture = sprite.texture;
                     if (texture != null)
                     {
-                        Tag = _manager.GetTag(texture);
-                        if (Tag != null)
+                        string tag = _manager.GetTag(texture);
+                        if (tag != null)
                         {
-                            _tagState = TagStateValue.HasTag;
-                        } else
-                        {
-                            _tagState = TagStateValue.NoTag;
+                            StopListeningForAtlases();
+                            Tag = tag;
                         }
                     }
-                    else
-                    {
-                        _tagState = TagStateValue.NoTag;
-                    }
-                }
-                else
-                {
-                    _tagState = TagStateValue.NeverTag;
                 }
             }
         }
 
         public void Sleep()
         {
-            if (_tagState == TagStateValue.HasTag)
+            if (!string.IsNullOrEmpty(Tag))
             {
                 if (_manager != null && !_manager.Equals(null))
                 {
@@ -84,7 +95,7 @@ namespace SpriteSleeper
 
         public void Wake()
         {
-            if (_tagState == TagStateValue.HasTag)
+            if (!string.IsNullOrEmpty(Tag))
             {
                 if (_manager != null && !_manager.Equals(null))
                 {
