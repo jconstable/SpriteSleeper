@@ -1,6 +1,8 @@
 # SpriteSleeper
 For Unity applications that run on low-memory devices (mobile, mostly), this package allows for UGUI hierarchies to remain in memory, without paying the memory cost for their SpriteAtlases' textures.
 
+This library does not allocate GC garbage, and does not rely on Resources.UnloadUnusedAssets().
+
 Loading UI prefabs at runtime can be expensive on low-end devices. UGUI performs a rebuild to create the Canvas geometry, which is costly and can cause hitching. Ideally, loaded UI screens should not be unloaded when dismissed, and should instead be hidden by disabling their Canvas component. However, disabled Canvases will keep their SpriteAtlases in memory, which could be expensive.
 
 This package aims to allow the developer to choose which UI screens should keep their SpriteAtlases alive, and which can unload them when dismissed.

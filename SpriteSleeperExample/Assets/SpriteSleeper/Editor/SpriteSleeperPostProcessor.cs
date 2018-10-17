@@ -15,15 +15,15 @@ namespace SpriteSleeperEditor
         private static string ResourcesIdentifier = "/Resources/";
         static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
-            List<string> allAssets = new List<string>();
-            allAssets.AddRange(importedAssets);
-            allAssets.AddRange(deletedAssets);
-            allAssets.AddRange(movedAssets);
-            allAssets.AddRange(movedFromAssetPaths);
+            List<string> assetPaths = new List<string>();
+            assetPaths.AddRange(importedAssets);
+            assetPaths.AddRange(deletedAssets);
+            assetPaths.AddRange(movedAssets);
+            assetPaths.AddRange(movedFromAssetPaths);
 
-            foreach (var assetPath in allAssets)
+            foreach (var assetPath in assetPaths)
             {
-                if (assetPath.EndsWith(".spriteatlas"))
+                if (assetPath.EndsWith(".spriteatlas") || assetPath.Contains("SpriteSleeperPostProcessor"))
                 {
                     RebuildAtlasCache();
                     return;
@@ -70,6 +70,16 @@ namespace SpriteSleeperEditor
 
                     string relativePath = atlasPath.Substring(startIndex - 1, atlasPath.Length - startIndex + 1);
                     info.ResourcesPath = relativePath.Substring(0, relativePath.IndexOf("."));
+
+                    Sprite[] sprites = new Sprite[atlas.spriteCount];
+                    atlas.GetSprites(sprites);
+                    List<string> spriteNames = new List<string>();
+                    foreach( var sprite in sprites )
+                    {
+                        spriteNames.Add(sprite.name.Replace("(Clone)", ""));
+                    }
+
+                    info.SpriteNames = spriteNames.ToArray();
 
                     list.Atlases[usedAtlasPairs] = info;
 

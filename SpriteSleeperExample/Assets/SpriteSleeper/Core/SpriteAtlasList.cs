@@ -15,6 +15,7 @@ namespace SpriteSleeper
             public int AtlasID;
             public string AtlasTag;
             public string ResourcesPath;
+            public string[] SpriteNames;
         }
 
         public AtlasInfo[] Atlases;

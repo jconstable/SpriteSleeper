@@ -30,8 +30,6 @@ namespace SpriteSleeper
     // Images in the hierarchy use their texture to find out what Atlas they are in
     public class SpriteSleeperManager : MonoBehaviour
     {
-        private static readonly int s_MaxSprites = 1000;
-
         // Path to config file
         public static string GetSpriteSleeperDataPath()
         {
@@ -73,7 +71,6 @@ namespace SpriteSleeper
         private bool _atlasWasLoadedThisFrame = false;
         private GenericPool<Dictionary<string, Sprite>> _spriteDictPool;
         private GenericPool<LoadedAtlasInfo> _atlasInfoPool;
-        private Sprite[] _tempSprites;
 
         // Constructor
         SpriteSleeperManager()
@@ -92,7 +89,6 @@ namespace SpriteSleeper
                 () => { return new LoadedAtlasInfo(); },
                 (info) => { info.Reset(); }
             );
-            _tempSprites = new Sprite[s_MaxSprites];
         }
         
         void Awake()
@@ -149,33 +145,27 @@ namespace SpriteSleeper
 
         
         // Organize the information we need from a loaded atlas
-        private Texture2D SetupAtlasContents(string tag, SpriteAtlas atlas, LoadedAtlasInfo info)
+        private Texture2D SetupAtlasContents(SpriteAtlasList.AtlasInfo config, string tag, SpriteAtlas atlas, LoadedAtlasInfo info)
         {
             int spriteCount = atlas.spriteCount;
             Texture2D texture = null;
             Dictionary<string, Sprite> spriteDict = _spriteDictPool.Get();
 
-            if( spriteCount > s_MaxSprites )
-            {
-                throw new Exception("Atlas managed by SpriteSleeper exceed the max number of Sprites: " + spriteCount.ToString());
-            }
-
             if (atlas.spriteCount > 0)
             {
-                atlas.GetSprites(_tempSprites);
-
-                texture = _tempSprites[0].texture;
-                
-                for( int i = 0; i < spriteCount; i++ )
+                foreach( var spriteName in config.SpriteNames )
                 {
-                    Sprite sprite = _tempSprites[i];
-                    string spriteName = sprite.name; // Ugh, this allocates
                     if (!string.IsNullOrEmpty(spriteName))
                     {
+                        Sprite sprite = atlas.GetSprite(spriteName);
                         info.FirstSpriteName = spriteName;
                         spriteDict[spriteName] = sprite;
+
+                        if( texture == null)
+                        {
+                            texture = sprite.texture;
+                        }
                     }
-                    _tempSprites[i] = null;
                 }
             }
 
@@ -211,7 +201,7 @@ namespace SpriteSleeper
                     info.Tag = tag;
                     info.RefCount = 0;
 
-                    Texture2D texture = SetupAtlasContents(tag, atlas, info);
+                    Texture2D texture = SetupAtlasContents(atlasInfo, tag, atlas, info);
 
                     // Two dictionaries to link to LoadedAtlasInfo
                     _textureToInfo[texture] = info;

@@ -49,7 +49,7 @@ namespace SpriteSleeper
                 Sprite sprite = _image.sprite;
                 if (sprite != null)
                 {
-                    SpriteName = sprite.name + "(Clone)"; // This is dumb, but it's how the sprites are named when loaded from Resources
+                    SpriteName = sprite.name;
 
                     Texture2D texture = sprite.texture;
                     if (texture != null)
