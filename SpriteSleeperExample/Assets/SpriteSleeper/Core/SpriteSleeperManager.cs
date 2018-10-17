@@ -22,6 +22,8 @@ namespace SpriteSleeper
     // Images in the hierarchy use their texture to find out what Atlas they are in
     public class SpriteSleeperManager : MonoBehaviour
     {
+        private static readonly int s_MaxSprites = 1000;
+
         // Path to config file
         public static string GetSpriteSleeperDataPath()
         {
@@ -61,6 +63,9 @@ namespace SpriteSleeper
         private Dictionary<string, LoadedAtlasInfo> _tagToInfo;
         private Dictionary<string, Dictionary<string, Sprite>> _tagToSprites;
         private bool _atlasWasLoadedThisFrame = false;
+        private GenericPool<Dictionary<string, Sprite>> _spriteDictPool;
+        private GenericPool<LoadedAtlasInfo> _atlasInfoPool;
+        private Sprite[] _tempSprites;
 
         // Constructor
         SpriteSleeperManager()
@@ -69,6 +74,17 @@ namespace SpriteSleeper
             _textureToInfo = new Dictionary<Texture2D, LoadedAtlasInfo>();
             _tagToInfo = new Dictionary<string, LoadedAtlasInfo>();
             _tagToSprites = new Dictionary<string, Dictionary<string, Sprite>>();
+            _spriteDictPool = new GenericPool<Dictionary<string, Sprite>>(
+                10, 
+                () => { return new Dictionary<string, Sprite>(); }, 
+                (item) => { item.Clear(); }
+            );
+            _atlasInfoPool = new GenericPool<LoadedAtlasInfo>(
+                10,
+                () => { return new LoadedAtlasInfo(); },
+                (info) => { info.Atlas = null; info.FirstSpriteName = null; info.RefCount = 0; info.Tag = null; }
+            );
+            _tempSprites = new Sprite[s_MaxSprites];
         }
         
         void Awake()
@@ -123,26 +139,35 @@ namespace SpriteSleeper
             _configInfo = JsonUtility.FromJson<SpriteAtlasList>(sleeperDataJson).Atlases;
         }
 
+        
         // Organize the information we need from a loaded atlas
         private Texture2D SetupAtlasContents(string tag, SpriteAtlas atlas, LoadedAtlasInfo info)
         {
+            int spriteCount = atlas.spriteCount;
             Texture2D texture = null;
-            Dictionary<string, Sprite> spriteDict = new Dictionary<string, Sprite>();
+            Dictionary<string, Sprite> spriteDict = _spriteDictPool.Get();
+
+            if( spriteCount > s_MaxSprites )
+            {
+                throw new Exception("Atlas managed by SpriteSleeper exceed the max number of Sprites: " + spriteCount.ToString());
+            }
+
             if (atlas.spriteCount > 0)
             {
-                Sprite[] sprites = new Sprite[atlas.spriteCount];
-                atlas.GetSprites(sprites);
+                atlas.GetSprites(_tempSprites);
 
-                texture = sprites[0].texture;
-
-                foreach (var sprite in sprites)
+                texture = _tempSprites[0].texture;
+                
+                for( int i = 0; i < spriteCount; i++ )
                 {
-                    string spriteName = sprite.name;
+                    Sprite sprite = _tempSprites[i];
+                    string spriteName = sprite.name; // Ugh, this allocates
                     if (!string.IsNullOrEmpty(spriteName))
                     {
                         info.FirstSpriteName = spriteName;
                         spriteDict[spriteName] = sprite;
                     }
+                    _tempSprites[i] = null;
                 }
             }
 
@@ -171,9 +196,9 @@ namespace SpriteSleeper
                     {
                         throw new Exception("Unable to load SpriteAtlas at path: " + atlasInfo.ResourcesPath);
                     }
-                    
+
                     // Fill out a new info object
-                    info = new LoadedAtlasInfo();
+                    info = _atlasInfoPool.Get();
                     info.Atlas = atlas;
                     info.Tag = tag;
                     info.RefCount = 0;
@@ -257,7 +282,7 @@ namespace SpriteSleeper
             // Atlas needs to be unloaded
             if (info.RefCount == 0)
             {
-                UnloadAtlas(info);
+                UnloadAtlas(ref info);
             }
         }
 
@@ -269,10 +294,12 @@ namespace SpriteSleeper
             _textureToInfo = null;
             _canvases = null;
             _destroyed = true;
+            _spriteDictPool.Destroy();
+            _atlasInfoPool.Destroy();
         }
 
         // Unload the atlas, as well as our tracking of it
-        void UnloadAtlas(LoadedAtlasInfo info)
+        void UnloadAtlas(ref LoadedAtlasInfo info)
         {
             _tagToInfo.Remove(info.Tag);
 
@@ -289,6 +316,8 @@ namespace SpriteSleeper
                     }
                     sprites.Clear();
                 }
+
+                _spriteDictPool.Put(sprites);
             }
             _tagToSprites.Remove(info.Tag);
 
@@ -299,6 +328,9 @@ namespace SpriteSleeper
             {
                 OnAtlasUnloaded();
             }
+
+            _atlasInfoPool.Put(info);
+            info = null;
         }
 
         // Unity callback when a sprite requests a linked atlas
